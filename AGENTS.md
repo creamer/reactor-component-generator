@@ -24,7 +24,7 @@ bun run build      # tsc -b && vite build
 
 - API 키를 코드, 테스트, 로그, 커밋에 넣지 않는다. `.env`는 `.gitignore`에 있고 `.env.example`만 값 없이 커밋한다. 키 값을 응답이나 로그에 출력하지 않는다.
 - `/api/config`는 키 보유 여부(boolean)만 반환한다 (`server/index.ts:147-157`). 환경변수 키 값을 클라이언트로 내리는 응답을 추가하지 않는다.
-- 사용자가 UI에 입력한 키는 `useState` 메모리에만 둔다 (`src/App.tsx:14`). `localStorage` 등에 저장하지 않는다 (현재 저장소 전체에 사용처 없음).
+- 사용자가 UI에 입력한 키는 `useState` 메모리에만 둔다 (`src/App.tsx:18`). `localStorage` 등에 저장하지 않는다. 이 규칙은 `src/App.test.tsx`의 "입력한 API 키는 어떤 localStorage 항목에도 저장되지 않는다" 테스트가 지킨다. 그 외 상태(provider, 프롬프트 히스토리, 컴포넌트 목록)는 `usePersistentState`와 `src/utils/storage.ts`로만 저장하고, 저장 항목을 추가할 때는 키 값이 섞이지 않는지 확인한다.
 - CORS가 `*`이고 (`server/index.ts:51-55`) 서버 `.env` 키로 `/api/generate`가 동작한다. 서버를 외부에 노출하는 변경을 하려면 먼저 Origin 제한이나 인증을 추가한다.
 
 ### Hard Constraint
@@ -44,7 +44,7 @@ bun run build      # tsc -b && vite build
 
 ### Test Boundary
 
-- 테스트가 있는 곳: `server/generator.ts`, `server/fallback.ts`, `src/components/PromptInput.tsx`. 없는 곳: `server/index.ts`, `src/hooks/`, `src/App.tsx`, `LivePreview`, `ComponentCard`.
+- 테스트가 있는 곳: `server/generator.ts`, `server/fallback.ts`, `src/components/PromptInput.tsx`, `src/utils/`, `src/hooks/usePersistentState.ts`. 저장·복원 동작에 한해 `src/hooks/useComponentGenerator.ts`와 `src/App.tsx`에도 있다. 없는 곳: `server/index.ts`, `LivePreview`, `ComponentCard`, 그리고 두 파일의 생성 요청·에러 처리.
 - 새 로직은 테스트 가능한 순수 모듈로 분리한다. `server/generator.ts`가 그 선례다 (`server/generator.ts:1-2`: 부수효과가 없어 단위 테스트가 가능하다). `server/index.ts`는 import 시점에 `Bun.serve`로 서버를 띄우므로 (`server/index.ts:138`) 테스트에서 import하지 않는다.
 
 ## Project Context
