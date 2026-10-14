@@ -1,4 +1,6 @@
-export type Provider = 'anthropic' | 'google';
+export const PROVIDERS = ['anthropic', 'google'] as const;
+
+export type Provider = (typeof PROVIDERS)[number];
 
 export interface GeneratedComponent {
   id: string;
