@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { renderHook, act, waitFor } from '@testing-library/react';
 import { useComponentGenerator } from './useComponentGenerator';
-import { STORAGE_KEYS } from '../utils/storage';
+import { STORAGE_KEYS, MAX_STORED_COMPONENTS } from '../utils/storage';
 
 const ISO = '2026-10-14T04:30:00.000Z';
 
@@ -57,5 +57,29 @@ describe('useComponentGenerator 저장·복원', () => {
 
     await waitFor(() => expect(savedComponents()).toHaveLength(3));
     expect(savedComponents()[0].prompt).toBe('새 프롬프트');
+  });
+
+  it('최대 개수를 넘으면 가장 오래된 컴포넌트부터 버린다', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({ ok: true, json: async () => ({ code: 'render(<New />)' }) }),
+    );
+    const full = Array.from({ length: MAX_STORED_COMPONENTS }, (_, i) => ({
+      id: `old-${i}`,
+      prompt: `기존 ${i}`,
+      code: 'render(<A />)',
+      createdAt: ISO,
+    }));
+    localStorage.setItem(STORAGE_KEYS.components, JSON.stringify(full));
+    const { result } = renderHook(() => useComponentGenerator());
+
+    await act(async () => {
+      await result.current.generate('새 프롬프트', undefined, 'google');
+    });
+
+    const ids = result.current.components.map((c) => c.id);
+    expect(ids).toHaveLength(MAX_STORED_COMPONENTS);
+    expect(result.current.components[0].prompt).toBe('새 프롬프트');
+    expect(ids).not.toContain(`old-${MAX_STORED_COMPONENTS - 1}`);
   });
 });

@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import type { GeneratedComponent, Provider } from '../types';
-import { STORAGE_KEYS } from '../utils/storage';
+import { STORAGE_KEYS, MAX_STORED_COMPONENTS } from '../utils/storage';
 import { parseComponents } from '../utils/storedState';
 import { usePersistentState } from './usePersistentState';
 
@@ -46,7 +46,7 @@ export function useComponentGenerator(): UseComponentGeneratorReturn {
         createdAt: new Date(),
       };
 
-      setComponents((prev) => [newComponent, ...prev]);
+      setComponents((prev) => [newComponent, ...prev].slice(0, MAX_STORED_COMPONENTS));
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Unknown error';
       setError(message);

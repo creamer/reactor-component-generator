@@ -4,6 +4,9 @@ export const STORAGE_KEYS = {
   components: 'rcg:components',
 } as const;
 
+// 컴포넌트마다 생성 코드 전체가 저장되므로, localStorage 용량(약 5MB)을 넘기지 않도록 개수를 제한한다.
+export const MAX_STORED_COMPONENTS = 50;
+
 export function readStorage<T>(
   key: string,
   parse: (raw: unknown) => T | null,
