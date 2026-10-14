@@ -26,4 +26,13 @@ describe('usePersistentState', () => {
 
     expect(localStorage.getItem('k')).toBe('"changed"');
   });
+
+  it('파싱에 실패한 저장값은 마운트만으로 덮어쓰지 않는다', () => {
+    localStorage.setItem('k', JSON.stringify(123));
+
+    const { result } = renderHook(() => usePersistentState('k', asString, 'fallback'));
+
+    expect(result.current[0]).toBe('fallback');
+    expect(localStorage.getItem('k')).toBe('123');
+  });
 });
