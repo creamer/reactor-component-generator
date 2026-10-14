@@ -59,4 +59,32 @@ describe('PromptInput', () => {
 
     expect(onGenerate).not.toHaveBeenCalled();
   });
+
+  it('최근 프롬프트를 버튼으로 보여준다', () => {
+    render(
+      <PromptInput
+        onGenerate={vi.fn()}
+        isLoading={false}
+        history={['고객 목록 필터 바', 'KPI 카드 3개']}
+      />,
+    );
+
+    expect(screen.getByRole('button', { name: '고객 목록 필터 바' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'KPI 카드 3개' })).toBeInTheDocument();
+  });
+
+  it('최근 프롬프트를 클릭하면 입력창에 채워진다', async () => {
+    const user = userEvent.setup();
+    render(<PromptInput onGenerate={vi.fn()} isLoading={false} history={['고객 목록 필터 바']} />);
+
+    await user.click(screen.getByRole('button', { name: '고객 목록 필터 바' }));
+
+    expect(screen.getByRole('textbox')).toHaveValue('고객 목록 필터 바');
+  });
+
+  it('최근 프롬프트가 없으면 해당 영역을 보여주지 않는다', () => {
+    render(<PromptInput onGenerate={vi.fn()} isLoading={false} history={[]} />);
+
+    expect(screen.queryByText('최근 프롬프트')).not.toBeInTheDocument();
+  });
 });
